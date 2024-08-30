@@ -1,9 +1,32 @@
 import math
+import random
 
 class Mancala:
-    def __init__(self):
-        # Initialize board: 6 pits per player and 2 stores (index 6 and 13)
-        self.board = [4] * 6 + [0] + [4] * 6 + [0]  # Player 1 [0-5], Store 1 [6], Player 2 [7-12], Store 2 [13]
+    def __init__(self, random_mode=False, total_stones_per_side=24):
+        if random_mode:
+            self.board = self.random_board(total_stones_per_side)
+        else:
+            # Default board initialization: 4 stones per pit
+            self.board = [4] * 6 + [0] + [4] * 6 + [0]  # Player 1 [0-5], Store 1 [6], Player 2 [7-12], Store 2 [13]
+
+    def random_board(self, total_stones):
+        # Ensure each pit has at least one stone
+        pits = [1] * 6
+        remaining_stones = total_stones - 6  # Subtract 1 stone from each pit
+
+        # Randomly distribute the remaining stones
+        for i in range(6):
+            if i == 5:
+                pits[i] += remaining_stones
+            else:
+                max_additional_stones = remaining_stones - (5 - i)  # Ensure at least 1 stone remains for each remaining pit
+                add_stones = random.randint(0, max_additional_stones)
+                pits[i] += add_stones
+                remaining_stones -= add_stones
+
+        random.shuffle(pits)
+        return pits + [0] + pits.copy() + [0]  # Mirror the distribution for the other side
+
 
     def display_board_part(self):
         print("\nBoard View:")
@@ -152,16 +175,22 @@ def choose_mode_and_level():
 
     print("\n*** Choose Level ***")
     print("1. Beginner")
-    print("2. Intermiediate")
+    print("2. Intermediate")
     print("3. Advanced")
     print("4. Master")
+    level = int(input(">>> Enter the level (1-4): "))
 
-    level = int(input(">>> Enter the level (1-4): ")) 
+    print("\n*** Board Initialization ***")
+    print("1. Standard Board (4 stones per pit)")
+    print("2. Random Board (Equal stones per side, random distribution)")
+    board_choice = int(input(">>> Choose board initialization (1-2): "))
+
+    random_mode = board_choice == 2
     print("\n")
-    return mode, level 
+    return mode, level, random_mode
 
-def play_game(mode, level):
-    game = Mancala()
+def play_game(mode, level, random_mode):
+    game = Mancala(random_mode=random_mode)
     print("********************************* Game Start *********************************")
     print(">>> Initial Board")
     game.display_board()
@@ -295,7 +324,5 @@ def play_game(mode, level):
     print(game.determine_winner())
 
 def main():
-    mode, level = choose_mode_and_level()
-    play_game(mode, level)
-
-
+    mode, level, random_mode = choose_mode_and_level()
+    play_game(mode, level, random_mode)
